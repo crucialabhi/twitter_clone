@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>profile</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <link rel="stylesheet" href="public/style/chat.css" />
+  </head>
+  <body>
+        
+    <header class="header">
+      <div class="img">
+        <img
+          src="/public/photos/house.jpg"
+          alt="userProfilePcture"
+          onclick="dashboard()"
+        />
+      </div>
+      <div><button id="logout-button" onclick="logout()">Logout</button></div>
+    </header>
+    <div class="main-wrappr">
+        <aside class="aside">
+          <div class="suggestion-text">
+            <p>Start Chat:</p>
+            <button onclick="showGroup()">Create Group</button>
+          </div>
+          <div id="listUser"></div>
+        </aside>
+    
+    <main class="main">
+      <div id="create-group">
+        <h5>hello</h5>
+      </div>
+        <div id="temp-div">
+            <h5>Start Chat</h5>
+        </div>
+       <div id="main-chatBox" >
+                    <div class="profile-div">
+                        <p id="userName"></p>
+                        <img id="userImage" src="" alt="">
+                    </div>
+                    <div id="chat-view">
+                        
+                    </div>
+                    <div class="send-message">
+                        <form id="form">
+                            <input type="text" id="message" >
+                            <input type="submit" value="send" id="sendMessage">
+                        </form>
+                    </div>
+       </div>
+    </main>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    let socket = io();
+    const token = localStorage.getItem("jwtToken");
+    let chatType;
+    let email;
+    function startChat(userName){
+        msg =  "send the connection request"
+        socket.emit('join',{userName,token,msg});
+    }
+
+    function startgroupChat(userName){
+        msg =  "send the connection request"
+        socket.emit('group-join',{userName,token,msg});
+    }
+
+    function showGroup(){
+      document.getElementById('create-group').style.display="flex";
+      document.getElementById('temp-div').style.display="none";
+      document.getElementById('main-chatBox').style.display="none";
+    }
+
+    document.getElementById('sendMessage').addEventListener('click',(e)=>{
+        e.preventDefault();
+        ele = document.getElementById('message');
+        msg =ele.value;
+        ele.value=""; 
+        userName = document.getElementById('userName').innerHTML;
+        socket.emit('chat-message',{msg,userName,token,chatType})
+        mainDiv = document.getElementById('chat-view');
+        create =document.createElement('p');
+        create.classList.add("right-p")
+        create.textContent = `Me: ${msg}`;
+        mainDiv.appendChild(create);
+    })
+
+    socket.on('chat-message',async (data)=>{
+        mainUser = data.mainUser;
+        userName = data.userName;
+        buddyName = document.getElementById('userName').innerHTML;
+        console.log(userName,buddyName);
+        if(userName != buddyName && chatType!="group"){
+        msg = data.msg;
+        mainDiv = document.getElementById('chat-view');
+        create =document.createElement('p');
+        create.classList.add("left-p")
+        create.textContent = `${mainUser}: ${msg}`;
+        mainDiv.appendChild(create);
+        }else if(chatType=="group" && email != mainUser){
+        msg = data.msg;
+        mainDiv = document.getElementById('chat-view');
+        create =document.createElement('p');
+        create.classList.add("left-p")
+        create.textContent = `${mainUser}: ${msg}`;
+        mainDiv.appendChild(create);
+        }
+        
+    })
+
+    function logout() {
+        localStorage.removeItem("jwtToken");
+        location.replace("/loginPage");
+      }
+
+      async function dashboard() {
+        location.replace("/dashboard");
+      }
+
+
+      async function createFollowing(Data, allData,groupResult) {
+        const insertInDiv = document.getElementById("listUser");
+        const insertInGroup =document.getElementById('create-group');
+        let getAll = "";
+        groupResult.forEach((i)=>{
+          getAll += `
+            <div class="smalldiv">
+            <img src="/public/photos/user.png" alt="userProfilePcture">
+            <p>${i["group_socket_id"]}</p>
+            
+            <button onclick="groupChat(this)">Group Chat</button>
+        </div>
+       `;
+        })
+        let groupAll=`<form id="createGroup" enctype="multipart/form-data">`
+        Data.forEach((i) => {
+          const main_email = i["following_id"];
+          const indexOfData = allData.findIndex((x) => x.email === main_email);
+          if(allData[indexOfData]['user_image']){
+            getAll += `
+            <div class="smalldiv">
+            <img src="${allData[indexOfData]['user_image']}" alt="userProfilePcture">
+            <p>${i["following_id"]}</p>
+            <button onclick="chat(this)">Chat</button> 
+        </div>
+       `;
+       groupAll +=` <div class="smalldiv">
+            <input type="checkbox"id="vehicle1" name="email" value="${i["following_id"]}">
+            <img src="${allData[indexOfData]['user_image']}" alt="userProfilePcture">
+            <p>${i["following_id"]}</p>
+        </div>`
+          }
+          getAll += `
+            <div class="smalldiv">
+            <img src="/public/photos/user.png" alt="userProfilePcture">
+            <p>${i["following_id"]}</p>
+            <button onclick="chat(this)">Chat</button>
+        </div>
+        
+       `;
+       groupAll +=`<div class="smalldiv">
+            <input type="checkbox"  name="email" value="${i["following_id"]}">
+            <img src="/public/photos/user.png" alt="userProfilePcture">
+            <p>${i["following_id"]}</p>
+            
+        </div>`
+        });
+        groupAll += `<button  onclick="createGroup(event)">Create Group</button></form>`
+        insertInDiv.innerHTML = getAll;
+        insertInGroup.innerHTML=groupAll;
+      }
+     
+      async function createGroup(e){
+      e.preventDefault()
+      const formData =new FormData(document.getElementById('createGroup'));
+      console.log(formData);
+      const response = await fetch('/createGroup',{
+        method:"post",
+          headers:{"Authorization":token},
+          body:formData
+      })
+      if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+      const result = await response.json();
+        if(result.success){
+          alert(result.message)
+          document.getElementById('createGroup').reset();
+        }
+     }
+
+     async function groupChat(user) {
+      chatType ="group";
+      userName = user.previousElementSibling.innerHTML;
+      userImage = user.previousElementSibling.previousElementSibling.src;
+      document.getElementById('chat-view').innerHTML='';
+        const response = await fetch('/getchats',{
+          method:"post",
+          headers:{"Content-Type": "application/json",Authorization:token},
+          body:JSON.stringify({userName:userName,chatType:chatType})
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const chats = result.data.chats;
+         email = result.data.email;
+        chats.forEach((i)=>{
+          mainDiv = document.getElementById('chat-view');
+          senderName = i['chat_sender'];
+          msg = i['chat_content'];
+          if(email==senderName){
+                create = document.createElement('p');
+                create.classList.add("right-p")
+                create.textContent = `Me:${msg}`;
+                mainDiv.appendChild(create);
+          }else{
+                create = document.createElement('p');
+                create.classList.add("left-p")
+                create.textContent = `${senderName}:${msg}`;
+                mainDiv.appendChild(create);
+          }
+        })
+        document.getElementById('userName').innerHTML= userName;
+        document.getElementById('userImage').src = userImage;
+        document.getElementById('main-chatBox').style.display="block";
+        document.getElementById('temp-div').style.display="none";
+       
+        // document.getElementById('buddySide').innerHTML='';
+        startgroupChat(userName);
+     }
+     
+    async function chat(user){
+      chatType ="indivdual"
+      userName = user.previousElementSibling.innerHTML;
+      userImage = user.previousElementSibling.previousElementSibling.src;
+      document.getElementById('chat-view').innerHTML='';
+        const response = await fetch('/getchats',{
+          method:"post",
+          headers:{"Content-Type": "application/json",Authorization:token},
+          body:JSON.stringify({userName:userName,chatType:chatType})
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const chats = result.data.chats;
+        const email = result.data.email;
+        chats.forEach((i)=>{
+          mainDiv = document.getElementById('chat-view');
+          senderName = i['chat_sender'];
+          msg = i['chat_content'];
+          if(email==senderName){
+                create = document.createElement('p');
+                create.classList.add("right-p")
+                create.textContent = `Me:${msg}`;
+                mainDiv.appendChild(create);
+          }else{
+                create = document.createElement('p');
+                create.classList.add("left-p")
+                create.textContent = `${senderName}:${msg}`;
+                mainDiv.appendChild(create);
+          }
+        })
+        document.getElementById('userName').innerHTML= userName;
+        document.getElementById('userImage').src = userImage;
+        document.getElementById('main-chatBox').style.display="block";
+        document.getElementById('temp-div').style.display="none";
+       
+        // document.getElementById('buddySide').innerHTML='';
+        startChat(userName);
+      }
+
+      async function seeAllFollowing() {
+        // document.getElementById("editProfile").innerHTML = "";
+        const response = await fetch("/seeAllFollowing", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+
+        if (result.success) {
+          const Data = result.data.Result;
+          const allData = result.data.allResult;
+          const groupResult= result.data.groupResult;
+        //   document.getElementById("seeProfilePost").innerHTML = "";
+           createFollowing(Data, allData,groupResult);
+        }
+      }
+
+    
+    seeAllFollowing();
+    </script>
+  </body>
+</html>

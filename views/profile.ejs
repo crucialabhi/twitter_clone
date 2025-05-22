@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>profile</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <link rel="stylesheet" href="public/style/profile.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="img">
+        <img
+          src="/public/photos/house.jpg"
+          alt="userProfilePcture"
+          onclick="dashboard()"
+        />
+      </div>
+      <div><button id="logout-button" onclick="logout()">Logout</button></div>
+    </header>
+
+    <div class="main-wrappr">
+      <aside>
+        <div class="show-profile">
+          <div class="img">
+            <img
+              id="userImage"
+              src="/public/photos/user.png"
+              alt="userProfilePcture"
+            />
+          </div>
+          <p id="userName"></p>
+          <p id="userId"></p>
+          <p id="userContactNo"></p>
+          <p id="followers"></p>
+          <p id="following"></p>
+          <button onclick="seeAllFollowers()">See All Follower</button>
+          <br /><br />
+          <button onclick="seeAllFollowing()">See All Following</button>
+          <br /><br />
+          <button onclick="seeProfilePost()">See Profile Post</button>
+          <br /><br />
+          <button onclick="editProfile()">Edit Profile</button>
+        </div>
+      </aside>
+      <main class="main">
+        <div id="seeAllFollowers"></div>
+        <div id="seeAllFollowing"></div>
+        <div id="seeProfilePost"></div>
+        <div id="editProfile"></div>
+      </main>
+    </div>
+    <script>
+      const token = localStorage.getItem("jwtToken");
+      function logout() {
+        localStorage.removeItem("jwtToken");
+        location.replace("/loginPage");
+      }
+
+      async function dashboard() {
+        location.replace("/dashboard");
+      }
+
+      async function verfication() {
+        const response = await fetch("/verificationToken", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (!result.success) {
+          await alert(result.message);
+          await location.replace("/loginPage");
+        }
+        getProfileData();
+      }
+
+      async function getProfileData() {
+        const response = await fetch("/getProfileData", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.success) {
+          if (result.data.profileData.user_image) {
+            document.getElementById(
+              "userImage"
+            ).src = `${result.data.profileData.user_image}`;
+          }
+          document.getElementById(
+            "userName"
+          ).innerHTML =`User Name: ${result.data.profileData.first_name} ${result.data.profileData.last_name}`;
+            
+          document.getElementById("userId").innerHTML =`User Id: ${result.data.profileData.email}`
+          document.getElementById("userContactNo").innerHTML =`Contact: ${result.data.profileData.contact_no}` 
+          document.getElementById("followers").innerHTML = `Follower: ${result.data.followers}` 
+          document.getElementById("following").innerHTML = `Following: ${result.data.following}` 
+            
+        }
+      }
+
+      async function countFollowersFollowing() {
+        const response = await fetch("/countFollowersFollowing", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        const result = await response.json();
+        if (result.success) {
+          document.getElementById(
+            "followers"
+          ).innerHTML = `Following:${result.data.followers}`;
+          document.getElementById(
+            "following"
+          ).innerHTML = `Follower:${result.data.following}`;
+        }
+      }
+
+      async function unfollowUser(r) {
+        const email = r.previousSibling.previousSibling.innerHTML;
+        const response = await fetch("/unfollowUser", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ email: email }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          await alert(result.message);
+          r.setAttribute("onClick", "followUser(this)");
+          r.id = "followUser";
+          r.innerHTML = "follow";
+          await countFollowersFollowing();
+          await seeAllFollowing();
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function createFollowing(Data, allData) {
+        const insertInDiv = document.getElementById("seeAllFollowing");
+        let getAll = "";
+        Data.forEach((i) => {
+          const main_email = i["following_id"];
+          const indexOfData = allData.findIndex((x) => x.email === main_email);
+          if(allData[indexOfData]['user_image']){
+            getAll += `
+            <div class="smalldiv">
+            <img src="${allData[indexOfData]['user_image']}" alt="userProfilePcture">
+            <p>${i["following_id"]}</p>
+            <button onclick="unfollowUser(this)" id="unfollowUser">unfollow</button> 
+        </div>
+       `;
+          }
+          getAll += `
+            <div class="smalldiv">
+            <img src="/public/photos/user.png" alt="userProfilePcture">
+            <p>${i["following_id"]}</p>
+            <button onclick="unfollowUser(this)" id="unfollowUser">unfollow</button> 
+        </div>
+       `;
+        });
+        insertInDiv.innerHTML = getAll;
+      }
+
+      async function createFollowers(Data, allData) {
+        const insertInDiv = document.getElementById("seeAllFollowing");
+        let getAll = "";
+        Data.forEach((i) => {
+          const main_email = i["user_id"];
+          const indexOfData = allData.findIndex((x) => x.email === main_email);
+          if (allData[indexOfData]['user_image']) {
+            getAll += `
+            <div class="smalldiv">
+            <img src="${allData[indexOfData][user_image]}" alt="userProfilePcture">
+            <p>${i["user_id"]}</p> 
+        </div>
+       `;
+          } else {
+            getAll += `
+            <div class="smalldiv">
+            <img src="/public/photos/user.png" alt="userProfilePcture">
+            <p>${i["user_id"]}</p> 
+        </div>
+       `;
+          }
+        });
+        insertInDiv.innerHTML = getAll;
+      }
+
+      async function seeAllFollowing() {
+        document.getElementById("editProfile").innerHTML = "";
+        const response = await fetch("/seeAllFollowing", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+
+        if (result.success) {
+          const Data = result.data.Result;
+          const allData = result.data.allResult;
+          document.getElementById("seeProfilePost").innerHTML = "";
+          await createFollowing(Data, allData);
+        }
+      }
+
+      async function seeAllFollowers() {
+        document.getElementById("editProfile").innerHTML = "";
+        const response = await fetch("/seeAllFollowers", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+
+        if (result.success) {
+          const Data = result.data.Result;
+          const allData = result.data.allResult;
+          document.getElementById("seeProfilePost").innerHTML = "";
+          await createFollowers(Data, allData);
+        }
+      }
+
+      async function seeProfilePost() {
+        document.getElementById("editProfile").innerHTML = "";
+
+        const response = await fetch("/seeProfilePost", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.success) {
+          const Data = result.data.Result;
+          const checkLike = result.data.checkLike;
+          const allPost = result.data.allpost;
+          document.getElementById("seeAllFollowing").innerHTML = "";
+          document.getElementById("seeAllFollowers").innerHTML = "";
+
+          await showTweet(Data, checkLike, allPost);
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function showTweet(Data, checkLike, allPost) {
+        const insertInDiv = document.getElementById("seeProfilePost");
+        let getAll = "";
+        Data.forEach((i) => {
+          if (checkLike[i["id"]] == 1) {
+            if (i["is_retweeted"] == 1) {
+              const main_id = i["main_tweet_id"];
+              const indexOfData = allPost.findIndex((x) => x.id === main_id);
+
+              getAll += `
+            <div class="profilesmalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+             <div class="smalldiv-retweet">
+            <p>${allPost[indexOfData]["email"]}</p>
+            <p>${formatTweetTime(allPost[indexOfData]["tweet_created_at"])}</p>
+            <br>
+            <p id="content">${allPost[indexOfData]["content"]}</p>
+            <br>
+            </div>
+          <p id="${
+            i["id"]
+          }" class="like-button" onclick="unlike(this)"><i class="fa-solid fa-heart" style="color: #ef2929;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+        </div>`;
+            } else {
+              getAll += `
+            <div class="profilesmalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+              <br>
+            <p id="content">${i["content"]}</p>
+            <br>
+          <p id="${
+            i["id"]
+          }" class="like-button" onclick="unlike(this)"><i class="fa-solid fa-heart" style="color: #ef2929;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+      
+
+        </div>
+        `;
+            }
+          } else {
+            if (i["is_retweeted"] == 1) {
+              const main_id = i["main_tweet_id"];
+              const indexOfData = allPost.findIndex((x) => x.id === main_id);
+              getAll += `
+            <div class="profilesmalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+             <div class="smalldiv-retweet">
+            <p>${allPost[indexOfData]["email"]}</p>
+            <p>${formatTweetTime(allPost[indexOfData]["tweet_created_at"])}</p>
+            <br>
+            <p id="content">${allPost[indexOfData]["content"]}</p>
+            <br>
+            </div>
+          <p id="${
+            i["id"]
+          }" onclick="like(this)"><i class="fa-regular fa-heart" style="color: #000000;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+        </div>`;
+            } else {
+              getAll += `
+            <div class="profilesmalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+              <br>
+            <p id="content">${i["content"]}</p>
+            <br>
+          <p id="${
+            i["id"]
+          }" onclick="like(this)"><i class="fa-regular fa-heart" style="color: #000000;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+      
+
+        </div>
+        `;
+            }
+          }
+        });
+
+        insertInDiv.innerHTML = getAll;
+      }
+
+      function formatTweetTime(tweetTime) {
+        let userTimeZone =
+          localStorage.getItem("timezone") ||
+          Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const tweetDate = new Date(tweetTime);
+
+        const now = new Date();
+
+        const localTweetTime = new Date(
+          tweetDate.toLocaleString("en-US", { timeZone: userTimeZone })
+        );
+
+        const diffInSeconds = Math.floor((now - localTweetTime) / 1000);
+
+        let timeAgo;
+        if (diffInSeconds < 60) timeAgo = `${diffInSeconds} sec ago`;
+        else if (diffInSeconds < 3600)
+          timeAgo = `${Math.floor(diffInSeconds / 60)} min ago`;
+        else if (diffInSeconds < 86400)
+          timeAgo = `${Math.floor(diffInSeconds / 3600)} hours ago`;
+        else if (diffInSeconds < 604800)
+          timeAgo = `${Math.floor(diffInSeconds / 86400)} days ago`;
+        else timeAgo = formatDateTime(localTweetTime);
+        return `${timeAgo} (${formatDateTime(localTweetTime)})`;
+      }
+
+      function formatDateTime(date) {
+        return new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        }).format(date);
+      }
+
+      async function like(r) {
+        id = r.id;
+        const response = await fetch("/likeTweets", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ postId: id }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          document.getElementById(
+            id
+          ).innerHTML = `<i class="fa-solid fa-heart" style="color: #ef2929;"></i>`;
+
+          r.setAttribute("onClick", "unlike(this)");
+          r.nextSibling.innerHTML = `${result.data.count}`;
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function unlike(r) {
+        id = r.id;
+        const response = await fetch("/unLikeTweets", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ postId: id }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          document.getElementById(
+            id
+          ).innerHTML = `<i class="fa-regular fa-heart" style="color: #000000;"></i>`;
+
+          r.setAttribute("onClick", "like(this)");
+          r.nextSibling.innerHTML = `${result.data.count}`;
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function editProfile(){
+        document.getElementById("seeProfilePost").innerHTML = "";
+        document.getElementById("seeAllFollowers").innerHTML = "";
+        document.getElementById("seeAllFollowing").innerHTML = "";
+
+        const userImage = document.getElementById('userImage').src;
+        const name =  document.getElementById('userName').innerHTML;
+        const splitName = name.split(" ");
+        console.log(splitName);
+        
+        const fname = splitName[2].trim();
+        const lname = splitName[3].trim();
+        const emailSlice =   document.getElementById('userId').innerHTML;
+        const contactSlice =  document.getElementById('userContactNo').innerHTML;
+        const email =emailSlice.slice(8).trim()
+        const contact =contactSlice.slice(8).trim();
+      
+        document.getElementById('editProfile').innerHTML =`<div class="registration-div">
+        <div class="container-center">
+          <div id="img">
+            <img id="userEditImage"src="${userImage}" alt="" />
+          </div>
+        </div>
+        <form
+          action="/registrationValidation"
+          method="post"
+          enctype="multipart/form-data"
+          id="form"
+        >
+          <div class="container">
+            <label for="fname">First Name:</label>
+
+            <input type="text" name="fname" value="${fname}"/>
+          </div>
+          <div class="container">
+            <label for="lname">Last Name:</label>
+
+            <input type="text" name="lname" value="${lname}"/>
+          </div>
+          <div class="container">
+            <label for="email">Email:</label>
+
+            <input
+              type="text"
+              name="email"
+              id="email"
+            value="${email}" readonly
+            onchange="previewFile()"/>
+          </div>
+          
+          <div class="container">
+            <label for="contact">Contact No:</label>
+            <input type="text" name="contact" value="${contact}"/>
+          </div>
+          <div class="container">
+            <input type="file" onchange="previewFile()" name="profileImage" />
+          </div>
+          <div class="container-center">
+            <input type="submit" value="Submit" id="editbtn" onclick="editUserDetail(event)"/>
+          </div>
+        </form>
+      </div>`;
+      }
+
+      function previewFile() {
+        var preview = document.getElementById("userEditImage");
+        var file = document.querySelector("[type='file']").files[0];
+        var reader = new FileReader();
+        if (file) {
+        }
+        reader.readAsDataURL(file);
+        reader.addEventListener("load", function () {
+          preview.src = reader.result;
+          
+        });
+      }
+        
+     async function editUserDetail(e){
+      e.preventDefault();
+        const form = document.getElementById("form");
+        const formData = new FormData(form);
+        formData.delete("profileImage");
+        formData.append("timeZone", Intl.DateTimeFormat().resolvedOptions().timeZone);
+        var file = document.querySelector("[type='file']").files[0];
+        if (file) {
+          formData.append("profileImage", file, file.name);
+        }
+      const response = await fetch('/editUserDetail',{
+        method: "post",
+          headers: { Authorization: token },
+          body:formData
+      })
+      if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+      const result = await response.json();
+      if(result.success){
+        alert(result.message);
+        await getProfileData();
+        document.getElementById('editProfile').innerHTML="";
+        await editProfile();
+      }else{
+        alert(result.message)
+      }
+    }
+     
+    verfication();
+    </script>
+  </body>
+</html>

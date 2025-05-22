@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration Page</title>
+    <link rel="stylesheet" href="/public/style/registration.css" />
+    <style>
+      
+      .container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      .container-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #img{
+        display:none;
+      }
+      #img img{
+        height: 100px;
+        width: 100px;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h3>Register Yourself !</h3>
+    </header>
+    <div class="main-div">
+      <div class="registration-div">
+        <div class="container-center">
+          <div id="img">
+            <img src="/public/photos/user.png" alt="" />
+          </div>
+        </div>
+        <form
+          action="/registrationValidation"
+          method="post"
+          enctype="multipart/form-data"
+          id="form"
+        >
+          <div class="container">
+            <label for="fname">First Name:</label>
+
+            <input type="text" name="fname" />
+          </div>
+          <div class="container">
+            <label for="lname">Last Name:</label>
+
+            <input type="text" name="lname" />
+          </div>
+          <div class="container">
+            <label for="email">Email:</label>
+
+            <input
+              type="text"
+              name="email"
+              id="email"
+              onchange="validateEmail()"
+            />
+          </div>
+          <div class="container">
+            <div id="emailDiv"></div>
+          </div>
+          <div class="container">
+            <label for="contact">Contact No:</label>
+            <input type="text" name="contact" />
+          </div>
+          <div class="container">
+            <input type="file" onchange="previewFile()" name="profileImage" />
+          </div>
+          <div class="container-center">
+            <input type="submit" value="Submit" id="btn" />
+            <input type="submit" value="Login" id="btn2" />
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const click = document.getElementById("btn");
+      const logout = document.getElementById("btn2");
+      const time = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      function previewFile() {
+        var preview = document.querySelector("img");
+        var file = document.querySelector("[type='file']").files[0];
+        var reader = new FileReader();
+        if (file) {
+        }
+        reader.readAsDataURL(file);
+        reader.addEventListener("load", function () {
+          preview.src = reader.result;
+          document.getElementById('img').style.display ="flex"; 
+          // console.log(reader.result);
+        });
+      }
+
+      logout.onclick = async (e) => {
+        e.preventDefault();
+        location.replace("/loginPage");
+      };
+
+      click.onclick = async (e) => {
+        e.preventDefault();
+        const checkemail = document.getElementById("emailDiv").innerHTML;
+        if (checkemail == "Give proper email in the xyz@gmail.com format" || checkemail== "user id exist") {
+          alert("email is invalid");
+          document.getElementById("emailDiv").innerHTML = "";
+          document.getElementById("form").reset();
+          return false;
+        }
+        const form = document.getElementById("form");
+        const formData = new FormData(form);
+        formData.delete("profileImage");
+        formData.append("timeZone", time);
+        var file = document.querySelector("[type='file']").files[0];
+        if (file) {
+          formData.append("profileImage", file, file.name);
+        }
+        const response = await fetch("/createTokenForPassword", {
+          method: "post",
+          body: formData,
+        });
+        if (!response.ok) {
+          throw new Error(`Response Status:${response.Status}`);
+        }
+        const result = await response.json();
+
+        if (!result.success) {
+          await alert(result.message);
+          document.getElementById("emailDiv").innerHTML = "";
+          document.getElementById('img').style.display ="none"; 
+          document.getElementById("form").reset();
+        } else {
+          localStorage.setItem("emailToken", result.data.token);
+          localStorage.setItem("id", result.data.id);
+          await alert(result.message);
+          document.getElementById("emailDiv").innerHTML = "";
+          document.getElementById("form").reset();
+          document.getElementById("form").submit();
+        }
+      };
+
+      async function validateEmail() {
+        let emailData = document.getElementById("email").value;
+        const response = await fetch("/validateEmail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: emailData }),
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+
+        if (result.success) {
+          document.getElementById("emailDiv").innerHTML = "Valid Email";
+          document.getElementById("emailDiv").style = "color:green; ";
+        } else {
+          document.getElementById("emailDiv").innerHTML = `${result.message}`;
+          document.getElementById("emailDiv").style = "color:red; ";
+        }
+      }
+    </script>
+  </body>
+</html>

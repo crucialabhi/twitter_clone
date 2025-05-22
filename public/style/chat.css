@@ -1,0 +1,267 @@
+
+
+body {
+    margin: 0;
+    font-family:'Arial Narrow', Arial, sans-serif;
+  }
+  .header {
+    height: 50px;
+    background: #68bbe3;
+    color: white;
+    position: fixed;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .header #logout-button {
+    height: 35px;
+    width: 80px;
+    background-color: white;
+    border: white;
+    border-radius: 9px;
+    margin: 7px 40px 0px 0px;
+    color: black;
+   
+    font-weight: 600;
+   
+  }
+  .header .img{
+    display: flex;
+  }
+  
+  .header .img p{
+    margin-left: 12px;
+  }
+  .main-wrappr {
+    display: flex;
+  }
+  .main-wrappr .aside{
+    width: 20%;
+    height:calc(100% - 50px);
+    overflow:scroll;
+    position: fixed;
+    top: 50px;
+    bottom: 0px;
+    overflow-y: scroll;
+  }
+  .main {
+    margin-left: 20%;
+    width: calc(100% - 20%);
+    margin-top: 91px;
+  }
+  .img img {
+    height: 40px;
+    width: 40px;
+    border: 1px solid black;
+    border-radius: 50%;
+    margin: 3px 0px 0px 10px;
+  }
+  .suggestion-text {
+    height: 42px;
+    width: 100%;
+    font-weight: 600;
+    background: white;
+    padding: 0px;
+    /* padding: 16px 0px 0px 0px; */
+    position: fixed;
+  }
+  .suggestion-text p{
+    margin: 22px 0px 0px 0px;
+  }
+  #listUser {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 64px;
+  }
+  #listUser .smalldiv {
+    width: 100%;
+    font-weight: 700;
+    box-shadow: 0px 0px 6px #68bbe3;
+    background-color: #68bbe3;
+    padding: 2px 0px;
+    margin: 5px 10px;
+    text-align: center;
+  }
+  #listUser .smalldiv img {
+    height: 50px;
+    width: 50px;
+    margin-top: 2px ;
+    border-radius: 50%;
+  }
+  #listUser .smalldiv p {
+    display: inline;
+    padding-top: 5px;
+    margin: 0px;
+  }
+  #listUser .smalldiv button {
+    height: fit-content;
+    margin: 5px 0px;
+    background-color: white;
+    border: white;
+    border-radius: 5px;
+    font-weight: 444;
+  }
+  #tweets .smalldiv button{
+    height: 30px;
+      background-color: #68bbe3;
+    border: #68bbe3;
+    color: whitesmoke;
+    border-radius: 9px;
+    margin: 7px 40px 5px 0px;
+    font-weight: 600;
+  }
+  .createTweet {
+    position: fixed;
+    background: white;
+    width: calc(100% - 20%);
+    top: 50px;
+  }
+  
+  #tweets{
+    margin-top: 114px;
+  }
+  #contentOfTweet {
+    height: 50px;
+    width: 58vw;
+    margin: 1px 22px 0px 22px;
+  }
+  #contentOfTweet button{
+    height: 100px;
+  
+  }
+  #tweets .smalldiv {
+    box-shadow: 0 0 10px 0 #8eb9ce;
+    margin: 14px;
+    background:white;
+  }
+  .createTweet button{
+    height: 35px;
+    width: 80px;
+    background-color: #68bbe3;
+    border: #68bbe3;
+    border-radius: 9px;
+    margin: 7px 40px 0px 0px;
+    font-weight: 444;
+    position: fixed;
+    top: 57px;
+    color: white;
+  }
+  #tweets .smalldiv p{
+    display: inline-block;
+    margin: 5px;
+  }
+  
+   #like {
+    font-size: 50px;
+  }
+  
+  .smalldiv .smalldiv-retweet {
+    box-shadow: 0px 0px 5px black;
+    margin: 0px 25px;
+  }
+  
+  .profile-div{
+    height: 30px;
+    background-color: #68bbe3;
+    border: 1px solid #8eb9ce;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .profile-div p{
+    margin: 0;
+  }
+  .profile-div img{
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+  }
+  #chat-view{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  #main-chatBox{
+    display: none;
+    margin-top: 28px;
+  }
+/* 
+  #userSide{
+    display: flex;
+    justify-content: flex-end;
+    }
+    #buddySide{
+        display: flex;
+        justify-content: flex-start;
+    } */
+  .right-p {
+    background-color: lightgray;
+    align-self: flex-end;
+    border: 1px solid black;
+    padding: 5px;
+    margin: 0px;
+    margin-top: 5px;
+    margin-right: 5px;
+
+  }
+.left-p{
+    background-color: lightblue;
+   align-self: flex-start;
+   border: 1px solid black;
+   padding: 5px;
+   margin: 0px;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+.send-message {
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  gap: 2%;
+}
+.send-message input[type="text"]{
+  height: 30px;
+  width: 68%;
+  border: 2px solid gray;
+  outline: none;
+}
+.send-message input[type="submit"]{
+  height: 30px;  
+  width: 10%;  
+background-color: #68bbe3;
+border: #68bbe3;
+color: whitesmoke;
+border-radius: 9px;
+margin: 7px 40px 5px 0px;
+font-weight: 600;
+}
+.send-message input[type="text"]:focus{
+ height: 30px;
+  width: 68%;
+  border: 2px solid #68bbe3;
+ 
+}
+#create-group{
+  display: none;
+  margin-top: 28px;
+}
+#create-group  .smalldiv {
+  width: 100%;
+  font-weight: 700;
+  box-shadow: 0px 0px 6px #68bbe3;
+  background-color: #68bbe3;
+  padding: 2px 0px;
+  margin: 5px 10px;
+  text-align: center;
+}
+#create-group .smalldiv img {
+  height: 50px;
+  width: 50px;
+  margin-top: 2px ;
+  border-radius: 50%;
+}
+#create-group .smalldiv p {
+  display: inline;
+  padding-top: 5px;
+  margin: 0px;
+}
