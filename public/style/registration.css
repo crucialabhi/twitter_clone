@@ -1,0 +1,38 @@
+body{
+    margin: 0;
+    background: #68bbe3;
+  font-family:'Arial Narrow', Arial, sans-serif;
+}
+header{
+    text-align: center;
+}
+.main-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* text-align: center; */
+    /* margin-top: 190px; */
+  }
+
+.registration-div {
+    box-shadow: 0px 2px 5px 3px #eaf0f2;
+    padding: 20px;
+  }
+.main-div .registration-div input{
+    margin: 10px;
+  height: 27px;
+  width: 261px;
+  margin-left: 39px;
+  }
+  .main-div .registration-div input[type=submit]{
+    height: 35px;
+    width: 80px;
+    background-color: white;
+    border: white;
+    border-radius: 9px;
+    color: black;
+    font-weight: 600;
+  }
+  .main-div .registration-div label{
+    font-size: 20px;
+  }

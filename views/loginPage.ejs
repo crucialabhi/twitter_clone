@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="/public/style/registration.css" />
+  </head>
+  <body>
+    <header>
+      <h3>Login !</h3>
+    </header>
+    <div class="main-div">
+      <div class="registration-div">
+        <form
+          action="/dashboard"
+          method="post"
+          enctype="multipart/form-data"
+          id="form"
+        >
+          <label for="email">Email:</label>
+          <br />
+          <input type="text" name="email" />
+          <br />
+          <label for="password">Password:</label>
+          <br />
+          <input type="password" name="password" />
+          <br />
+          <input type="submit" value="submit" id="btn" />
+          <input type="submit" value="Register !" id="btn2" />
+
+        </form>
+      </div>
+    </div>
+    <script>
+      document.getElementById("btn2").onclick = async (e) => {
+        e.preventDefault();
+        location.replace("/");
+      };
+
+      document.getElementById("btn").onclick = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const response = await fetch("/validateLogIn", {
+          method: "POST",
+          body: formData,
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (!result.success) {
+          await alert(result.message);
+          document.getElementById("form").reset();
+          return false;
+        } else {
+          localStorage.setItem("jwtToken", `${result.data.jwtToken}`);
+          await alert(result.message);
+          location.replace("/dashboard");
+        }
+      };
+    </script>
+  </body>
+</html>

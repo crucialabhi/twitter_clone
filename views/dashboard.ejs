@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="public/style/dashboard.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="img">
+        <img
+          id="userImage"
+          src="/public/photos/user.png"
+          alt="userProfilePcture"
+          onclick="showprofile()"
+        />
+        <div>
+          <p id="user-name"></p>
+        </div>
+      </div>
+      <div><button id="logout-button" onclick="personalChat()">Start Chat</button></div>
+      <div><button id="logout-button" onclick="logout()">Logout</button></div>
+    </header>
+    <div class="main-wrappr">
+      <aside class="aside">
+        <div class="suggestion-text">
+          <p>Suggestion:</p>
+        </div>
+        <div id="listUser"></div>
+      </aside>
+
+      <main class="main">
+        <div class="createTweet">
+          <label for="contentOfTweet">Content:</label>
+          <input type="text" id="contentOfTweet" />
+          <!-- <textarea name="contentOfTweet" id="contentOfTweet"></textarea> -->
+          <button onclick="createTweet()">Send</button>
+        </div>
+        <div id="tweets"></div>
+      </main>
+    </div>
+
+    <script>
+      const token = localStorage.getItem("jwtToken");
+
+      async function personalChat() {
+        location.replace("/personal-chat");
+      }
+
+      function formatDateTime(date) {
+        return new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        }).format(date);
+      }
+
+      function formatTweetTime(tweetTime) {
+        console.log(tweetTime);
+        
+        let userTimeZone =
+          localStorage.getItem("timezone") ||
+          Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const tweetDate = new Date(tweetTime);
+
+        const now = new Date();
+
+        const localTweetTime = new Date(
+          tweetDate.toLocaleString("en-US", { timeZone: userTimeZone })
+        );
+
+        const diffInSeconds = Math.floor((now - localTweetTime) / 1000);
+
+        let timeAgo;
+        if (diffInSeconds < 60) timeAgo = `${diffInSeconds} sec ago`;
+        else if (diffInSeconds < 3600)
+          timeAgo = `${Math.floor(diffInSeconds / 60)} min ago`;
+        else if (diffInSeconds < 86400)
+          timeAgo = `${Math.floor(diffInSeconds / 3600)} hours ago`;
+        else if (diffInSeconds < 604800)
+          timeAgo = `${Math.floor(diffInSeconds / 86400)} days ago`;
+        else timeAgo = formatDateTime(localTweetTime);
+        return `${timeAgo} (${formatDateTime(localTweetTime)})`;
+      }
+
+      function logout() {
+        localStorage.removeItem("jwtToken");
+        location.replace("/loginPage");
+      }
+
+      async function verfication() {
+        const token = localStorage.getItem("jwtToken");
+        // const email = document.getElementById('email');
+        const response = await fetch("/verificationToken", {
+          method: "post",
+          headers: { Authorization: token },
+          //   body:JSON.stringify()
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (!result.success) {
+          await alert(result.message);
+          await location.replace("/loginPage");
+        } else {
+          const Data = result.data;
+          document.getElementById(
+            "user-name"
+          ).innerHTML = `${Data.Result.first_name} ${Data.Result.last_name}`;
+          if (Data.Result.user_image) {
+            document.getElementById(
+              "userImage"
+            ).src = `${Data.Result.user_image}`;
+          }
+          await listTweet();
+          await listUser();
+        }
+      }
+
+      async function showprofile() {
+        location.replace("/showprofile");
+      }
+
+      async function listUser() {
+        const response = await fetch("/listingAllUser", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        const result = await response.json();
+        if (result.success) {
+          const Data = result.data.Result;
+          await createProfile(Data);
+        } else {
+          await alert(result.message);
+          await location.replace("/loginPage");
+        }
+      }
+
+      async function createProfile(Data) {
+        const insertInDiv = document.getElementById("listUser");
+        let getAll = "";
+        Data.forEach((i) => {
+          if (i["user_image"]) {
+            getAll += `
+            <div class="smalldiv">
+            <img src="${i["user_image"]}" alt="userProfilePcture">
+            <br>
+            <p>${i["email"]}</p>
+            <br>
+            <button onclick="followUser(this)" id="followUser">follow</button> 
+        </div>
+       `;
+          } else {
+            getAll += `
+            <div class="smalldiv">
+            <img src="/public/photos/user.png" alt="userProfilePcture">
+            <br>
+            <p>${i["email"]}</p>
+            <br>
+            <button onclick="followUser(this)" id="followUser">follow</button> 
+        </div>
+       `;
+          }
+        });
+
+        insertInDiv.innerHTML = getAll;
+      }
+
+      async function followUser(r) {
+        const email = r.previousElementSibling.previousElementSibling.innerHTML;
+        console.log(email);
+        const response = await fetch("/followUser", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ email: email }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          // await alert(result.message);
+          await listUser();
+          r.setAttribute("onClick", "unfollowUser(this)");
+          r.id = "unfollowUser";
+          r.innerHTML = "unfollow";
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function unfollowUser(r) {
+        const email = r.previousSibling.previousSibling.innerHTML;
+        const response = await fetch("/unfollowUser", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ email: email }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          // await alert(result.message);
+          r.setAttribute("onClick", "followUser(this)");
+          r.id = "followUser";
+          r.innerHTML = "follow";
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function createTweet() {
+        const content = document.getElementById("contentOfTweet").value;
+        const response = await fetch("/createTweet", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ content: content }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          await alert(result.message);
+          document.getElementById("contentOfTweet").value = "";
+          await listTweet();
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function listTweet() {
+        const response = await fetch("/listTweet", {
+          method: "post",
+          headers: { Authorization: token },
+        });
+        const result = await response.json();
+        // console.log(result.data.Result[0]);
+        if (result.success) {
+          const Data = result.data.Result;
+          const checkLike = result.data.checkLike;
+          
+          await showTweet(Data, checkLike);
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function showTweet(Data, checkLike) {
+        const insertInDiv = document.getElementById("tweets");
+        let getAll = "";
+        Data.forEach((i) => {
+          console.log(i);
+          
+          if (checkLike[i["id"]] == 1) {
+            if (i["is_retweeted"] == 1) {
+              const main_id = i["main_tweet_id"];
+              const indexOfData = Data.findIndex((x) => x.id === main_id);
+              getAll += `
+            <div class="smalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+            <br>
+            <p>${i["content"]}</p>
+             <div class="smalldiv-retweet">
+            <p>${Data[indexOfData]["email"]}</p>
+            <p>${formatTweetTime(Data[indexOfData]["tweet_created_at"])}</p>
+            <br>
+            <p id="content">${Data[indexOfData]["content"]}</p>
+            <br>
+            </div>
+          <p id="${
+            i["id"]
+          }" class="like-button" onclick="unlike(this)"><i class="fa-solid fa-heart" style="color: #ef2929;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+        </div>`;
+            } else {
+              getAll += `
+            <div class="smalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+              <br>
+            <p id="content">${i["content"]}</p>
+            <br>
+          <p id="${
+            i["id"]
+          }" class="like-button" onclick="unlike(this)"><i class="fa-solid fa-heart" style="color: #ef2929;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+       <button onclick="reTweet(this)">Retweet</button>
+
+        </div>
+        `;
+            }
+          } else {
+            if (i["is_retweeted"] == 1) {
+              const main_id = i["main_tweet_id"];
+              const indexOfData = Data.findIndex((x) => x.id === main_id);
+              getAll += `
+            <div class="smalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+            <br>
+            <p>${i["content"]}</p>
+             <div class="smalldiv-retweet">
+            <p>${Data[indexOfData]["email"]}</p>
+            <p>${formatTweetTime(Data[indexOfData]["tweet_created_at"])}</p>
+            <br>
+            <p id="content">${Data[indexOfData]["content"]}</p>
+            <br>
+            </div>
+          <p id="${
+            i["id"]
+          }" onclick="like(this)"><i class="fa-regular fa-heart" style="color: #000000;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+        </div>`;
+            } else {
+              getAll += `
+            <div class="smalldiv">
+            <p>${i["email"]}</p>
+            <p>${formatTweetTime(i["tweet_created_at"])}</p>
+              <br>
+            <p id="content">${i["content"]}</p>
+            <br>
+          <p id="${
+            i["id"]
+          }" onclick="like(this)"><i class="fa-regular fa-heart" style="color: #000000;"></i><p>${
+                i["like_count"]
+              }</p> </p>
+       <button onclick="reTweet(this)">Retweet</button>
+
+        </div>
+        `;
+            }
+          }
+        });
+
+        insertInDiv.innerHTML = getAll;
+      }
+
+      async function like(r) {
+        id = r.id;
+        const response = await fetch("/likeTweets", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ postId: id }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          document.getElementById(
+            id
+          ).innerHTML = `<i class="fa-solid fa-heart" style="color: #ef2929;"></i>`;
+
+          r.setAttribute("onClick", "unlike(this)");
+          r.nextSibling.innerHTML = `${result.data.count}`;
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function unlike(r) {
+        id = r.id;
+        const response = await fetch("/unLikeTweets", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ postId: id }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          document.getElementById(
+            id
+          ).innerHTML = `<i class="fa-regular fa-heart" style="color: #000000;"></i>`;
+
+          r.setAttribute("onClick", "like(this)");
+          r.nextSibling.innerHTML = `${result.data.count}`;
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      async function reTweet(r) {
+        let retweetContent = prompt("Enter your content");
+        if(!retweetContent){
+          alert("The tweet can't be empty");
+          return false;
+        }
+        const id =
+          r.previousElementSibling.previousElementSibling.previousElementSibling
+            .id;
+        const response = await fetch("/reTweet", {
+          method: "post",
+          headers: { "Content-Type": "application/json", Authorization: token },
+          body: JSON.stringify({ postId: id ,retweetContent: retweetContent}),
+        });
+        const result = await response.json();
+        if (result.success) {
+          await listTweet();
+        } else {
+          await alert(result.message);
+        }
+      }
+
+      verfication();
+    </script>
+  </body>
+</html>

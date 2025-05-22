@@ -1,0 +1,223 @@
+body {
+  margin: 0;
+  font-family:'Arial Narrow', Arial, sans-serif;
+  /* overflow: hidden; */
+}
+
+.header{
+  height: 50px;
+  background: #68bbe3;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  position: fixed;
+
+  width: 100%;
+}
+.header #logout-button {
+  height: 35px;
+  width: 80px;
+  background-color: white;
+  border: white;
+  border-radius: 9px;
+  margin: 7px 40px 0px 0px;
+  font-weight: 444;
+}
+
+.main-wrappr{
+  display: flex;
+  width: 100%;
+}
+.show-profile {
+  text-align: center;
+  padding: 5px;
+  width: 20vw;
+  font-weight: 600;
+  background: #68bbe3;
+  margin: 33px 0px 0px 14px;
+  box-shadow: 0px 0px 6px #68bbe3;
+  border-top-left-radius:5px;
+  border-top-right-radius: 5px;
+  color: white;
+  position: fixed;
+  top: 50px;
+}
+.img img {
+  height: 40px;
+  width: 40px;
+  border: 1px solid black;
+  border-radius: 50%;
+  margin-left: 10px;
+}
+.main {
+  margin-left: 23%;
+  width: calc(100% - 20%);
+  margin-top: 51px;
+}
+.show-profile button{
+  height: 35px;
+  background-color: white;
+  border: white;
+  border-radius: 9px;
+  font-weight: 444;
+}
+#seeAllFollowing {
+  display: flex;
+  margin: 15px 0px 0px 15px;
+  flex-wrap: wrap;
+}
+#seeAllFollowers {
+  display: flex;
+  margin: 15px 0px 0px 15px;
+  flex-wrap: wrap;
+}
+
+.smalldiv img {
+  height: 50px;
+  width: 50px;
+  margin: 2px 0px 0px 5px;
+  border-radius: 50%;
+}
+.smalldiv p {
+  display: inline;
+  padding: 0px 5px;
+}
+.smalldiv button {
+  height: fit-content;
+
+  margin-top: 18px;
+  background-color: white;
+  border: white;
+  border-radius: 5px;
+ 
+  font-weight: 444;
+}
+.smalldiv {
+  height: 70px;
+  color: whitesmoke;
+  font-weight: 600;
+  box-shadow: 0px 0px 6px #68bbe3;
+  background-color: #68bbe3;
+  display: flex;
+  padding: 2px 5px;
+  margin: 5px 8px;
+}
+
+
+#seeProfilePost .profilesmalldiv{
+  box-shadow: 0 0 10px 0 #8eb9ce;
+  margin: 14px;
+  background: white;
+  color: black;
+}
+
+.profilesmalldiv .smalldiv-retweet {
+  box-shadow: 0px 0px 5px black;
+  margin: 0px 25px;
+}
+#seeProfilePost .profilesmalldiv button{
+  height: 30px;
+  
+    background-color: #68bbe3;
+  border: #68bbe3;
+  color: whitesmoke;
+  border-radius: 9px;
+  margin: 7px 40px 5px 0px;
+  font-weight: 600;
+}
+.createTweet {
+  position: fixed;
+  background: white;
+  width: calc(100% - 20%);
+  top: 50px;
+}
+
+#seeProfilePost{
+  margin-top: -12px;
+}
+#contentOfTweet {
+  height: 50px;
+  width: 58vw;
+  margin: 1px 22px 0px 22px;
+}
+#contentOfTweet button{
+  height: 100px;
+
+}
+#seeProfilePost .profilesmalldiv {
+  box-shadow: 0 0 10px 0 #8eb9ce;
+  margin: 14px;
+  background:white;
+}
+.createTweet button{
+  height: 35px;
+  width: 80px;
+  background-color: #68bbe3;
+  border: #68bbe3;
+  border-radius: 9px;
+  margin: 7px 40px 0px 0px;
+  font-weight: 444;
+  position: fixed;
+  top: 57px;
+  color: white;
+}
+#seeProfilePost .profilesmalldiv p{
+  display: inline-block;
+  margin: 5px;
+}
+
+ #like {
+  font-size: 50px;
+}
+
+.profilesmalldiv .smalldiv-retweet {
+  box-shadow: 0px 0px 5px black;
+  margin: 0px 25px;
+}
+#editProfile{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 14px;
+}
+
+#editProfile  .registration-div {
+  box-shadow: 0px 2px 5px 3px #96daf0;
+  padding: 20px;
+}
+#editProfile .registration-div input{
+  margin: 10px;
+height: 27px;
+width: 261px;
+margin-left: 39px;
+}
+#editProfile .registration-div input[type=submit]{
+  height: 35px;
+  width: 80px;
+  background-color: #68bbe3;
+  border: #68bbe3;
+  border-radius: 9px;
+  color: white;
+  font-weight: 600;
+}
+#editProfile .registration-div label{
+  font-size: 20px;
+}
+.container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.container-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#img img{
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  border: 1px solid black;
+  
+}
